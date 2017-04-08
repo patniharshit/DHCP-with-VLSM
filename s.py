@@ -1,3 +1,4 @@
+import socket
 filename = 'subnets.conf'
 f = open(filename,'rb')
 
@@ -26,3 +27,22 @@ for line in f:
         dict_mac[line[0]] = line[1]
 
     count = count + 1
+
+port = 45555
+s = socket.socket()
+host = ""
+s.bind((host, port))
+s.listen(5)
+
+while True:
+    conn, addr = s.accept()
+    data = conn.recv(1024)
+    print data
+    result = dict_mac.get(data)             #Get Mac Address from Client
+    if result is None:
+        print "Error: Mac Address not found"
+    else:
+        print "Lab is : ",result
+    print('Done sending')
+    conn.send('Thank you for connecting')
+    conn.close()

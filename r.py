@@ -18,11 +18,10 @@ validInput = re.match("([0-9a-fA-F]:?){12}", " ".join(argv[2:]))
 if validInput is None:
     exit("ERROR: Validate the input")
 
-inputCommand = argv[2:]
+inputCommand = argv[2]
 
-socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socket1.connect((HOST, PORT))
-socket1.send(inputCommand)
-socket1.close()
+s.connect((HOST, PORT))
+s.send(inputCommand)
+s.close()
 
 print('connection closed')
