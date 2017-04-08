@@ -11,15 +11,15 @@ for line in f:
         line = line.split('\n')
         line = line[0].split("/")
         network_addr = line[0]      #Getting the network address
-        cidr = line[1]              #Getting the cidr
-    
+        cidr = int(line[1])              #Getting the cidr
+
     elif count==1:
         num_labs = int(line[0])
-         
+
     elif count>1 and count<=num_labs+1:
         line = line.split('\n')
         line = line[0].split(":")           #creating a dictionary for the labs in the form {'Lab_name':'No.of addresses required'}
-        dict_lab[line[0]] = int(line[1])    
+        dict_lab[line[0]] = int(line[1])
 
     elif count > num_labs+1:
         line = line.split('\n')
