@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 filename = 'subnets.conf'
 f = open(filename,'rb')
 
@@ -27,11 +26,3 @@ for line in f:
         dict_mac[line[0]] = line[1]
 
     count = count + 1
-print dict_mac
-=======
-filename = 'subnet.conf'
-f = open(filename, 'rb')
-
-for lines in f:
-    print lines
->>>>>>> 97e0d678210c917b167155c883f9401ae1554b17
