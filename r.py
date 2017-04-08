@@ -1,24 +1,28 @@
-import socket                   
+import socket
+import re
+from sys import argv
 
-s = socket.socket()             
-host = ""
-port = 45555                   
+s = socket.socket()
+HOST = ""
+PORT = 45555
 
-s.connect((host, port))
-s.send("Hello server!")
+if argv[1] == "-h" or argv[1] == "--help":
+    print
+    print "Usage: client.py -m <mac_address>"
+    print
+    exit(0)
 
-with open('received_file', 'wb') as f:
-    print 'file opened'
-    while True:
-        print('receiving data...')
-        data = s.recv(1024)
-        print('data=%s', (data))
-        if not data:
-            break
-        # write data to a file
-        f.write(data)
+# use regex for validating mac address
+validInput = re.match("([0-9a-fA-F]:?){12}", " ".join(argv[2:]))
 
-f.close()
-print('Successfully get the file')
-s.close()
+if validInput is None:
+    exit("ERROR: Validate the input")
+
+inputCommand = argv[2:]
+
+socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket1.connect((HOST, PORT))
+socket1.send(inputCommand)
+socket1.close()
+
 print('connection closed')
