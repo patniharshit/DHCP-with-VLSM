@@ -22,6 +22,8 @@ inputCommand = argv[2]
 
 s.connect((HOST, PORT))
 s.send(inputCommand)
+data = s.recv(1024)
+print data
 s.close()
 
 print('connection closed')
