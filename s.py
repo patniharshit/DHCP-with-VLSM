@@ -128,6 +128,10 @@ def vlsm(ipaddr, lab_req):
 
 
 def allote_ip(mac_address):
+
+    if(mac_address in dict_alloted):
+        return dict_alloted[mac_address]
+
     lab_name = dict_mac.get(mac_address)
 
     for i in range(len(state_arr)):
@@ -140,6 +144,7 @@ def allote_ip(mac_address):
                 exit(0)
             temp = next_state[0]
             return_ip = str(temp[0]) + '.' + str(temp[1]) + '.' + str(temp[2]) + '.' + str(temp[3])
+            dict_alloted[mac_address] = return_ip
             return return_ip
 
 
@@ -148,6 +153,7 @@ f = open(filename, 'rb')
 
 dict_lab = {}
 dict_mac = {}
+dict_alloted = {}
 lab_req = []
 state_arr = []
 count = 0
@@ -200,9 +206,9 @@ while True:
 
     result = dict_mac.get(data)             # Get the lab name using the MAC address given by client
     if result is None:
-        print "Error: Mac Address not found"
-
-    conn.send(allote_ip(data))
+        conn.send("Error: Mac Address not found")
+    else:
+        conn.send(allote_ip(data))
 
     print('Done sending')
 
