@@ -1,46 +1,38 @@
 import socket
 from math import pow, ceil, log
 
-def min_pow2(x):  # how many bits do we need to borrow
-    z = log(x, 2)  # to cover number of hosts
-    if int(z) != z:  # in math language:
-        z = ceil(z)  # to which integer power do
-    return int(z)  # we need to raise 2 to get the number that is ge "x"
+def min_pow2(x):
+    z = log(x, 2)
+    if int(z) != z:
+        z = ceil(z)
+    return int(z)
 
 
-def getmask(cidr):  # ex. 24 -> 255.255.255.0
-    arr = [0 for i in range(4)]  # creating list of four 0s
-    y = int(cidr / 8)  # how many octets of 255
-    if y > 0:  # if mask < 8
-        for z in range(y):
-            arr[z] = 255
-        arr[z + 1] = int(256 - pow(2, 8 - (cidr - 8 * y)))
-    else:
-        arr[0] = 256 - pow(2, 8 - cidr)
+def getmask(cidr):
+    arr = [0, 0, 0, 0]
+    y = int(cidr / 8)
+    z = -1
+    for z in range(y):
+        arr[z] = 255
+    arr[z + 1] = int(256 - pow(2, 8 - (cidr - 8 * y)))
     return arr
 
 
-def getnet(ipaddr, nmask):  # Get network address from ip and mask
-    net = [0 for i in range(4)]
-    for i in range(4):
-        net[i] = int(ipaddr[i]) & int(nmask[i])  # octet and mask
+def getnet(ipaddr, nmask):
+    net = []
+    net.append(int(ipaddr[0]) & int(nmask[0]))
+    net.append(int(ipaddr[1]) & int(nmask[1]))
+    net.append(int(ipaddr[2]) & int(nmask[2]))
+    net.append(int(ipaddr[3]) & int(nmask[3]))
     return net
 
 
-def getfirst(ipaddr):  # Get first usable address from ip and mask
-    addr = ipaddr[:]  # list is mutable, not to change the global value
-    return addr
-
-
-def getlast(ipaddr, nmask):  # Get last usable address from ip and mask
-    addr = getbcast(ipaddr, nmask)
-    return addr
-
-
-def getbcast(ipaddr, nmask):  # Get broadcast address from ip and mask
-    net = [0 for i in range(4)]
-    for i in range(4):
-        net[i] = int(ipaddr[i]) | 255 - int(nmask[i])  # octet or wildcard mask
+def getbcast(ipaddr, nmask):
+    net = []
+    net.append(int(ipaddr[0]) | 255 - int(nmask[0]))
+    net.append(int(ipaddr[1]) | 255 - int(nmask[1]))
+    net.append(int(ipaddr[2]) | 255 - int(nmask[2]))
+    net.append(int(ipaddr[3]) | 255 - int(nmask[3]))
     return net
 
 
@@ -118,8 +110,8 @@ def vlsm(ipaddr, lab_req):
                (lab_req[x][0] * 100) / (int(pow(2, bits)) - 2),
                int(pow(2, bits)) - 2,
                norm(ipaddr),
-               norm(getfirst(ipaddr)),
-               norm(getlast(ipaddr, getmask(int(32 - bits)))),
+               norm(ipaddr),
+               norm(getbcast(ipaddr, getmask(int(32 - bits)))),
                norm(getbcast(ipaddr, getmask(int(32 - bits)))),
                32 - bits,
                norm(getmask(int(32 - bits))))
