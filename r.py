@@ -1,12 +1,13 @@
 import socket
 import re
 import os
+import sys
 from sys import argv
 
-s = socket.socket()
-HOST = ""
-PORT = 45555
-if len(argv)==2:
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_address = ("", 45555)
+
+if len(argv) >= 2:
     if argv[1] == "-m":
         inputCommand = argv[2]
     elif argv[1] == "-h" or argv[1] == "--help":
@@ -22,7 +23,6 @@ else:
     inputCommand = firstline[len(firstline)-1]
 
 inputCommand = inputCommand.upper()
-print inputCommand
 
 # use regex for validating mac address
 #validInput = re.match("([0-9a-fA-F]:?){12}", " ".join(inputCommand))
@@ -30,10 +30,10 @@ print inputCommand
 #if validInput is None:
 #    exit("ERROR: Validate the input")
 
-s.connect((HOST, PORT))
-s.send(inputCommand)
-data = s.recv(1024)
-print data
+sent = s.sendto(inputCommand, server_address)
+data, server = s.recvfrom(1024)
+print >>sys.stderr, 'received "%s"' % data
+
 s.close()
 
 print('connection closed')

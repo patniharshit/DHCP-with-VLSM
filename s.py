@@ -1,5 +1,6 @@
 import socket
 from math import pow, ceil, log
+import sys
 
 def min_pow2(x):
     z = log(x, 2)
@@ -186,22 +187,24 @@ network_addr = getNetworkAddr(network_addr)
 vlsm(getnet(network_addr, mask), lab_req)
 
 port = 45555
-s = socket.socket()
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 host = ""
 s.bind((host, port))
-s.listen(5)
 
 while True:
-    conn, addr = s.accept()
-    data = conn.recv(1024)
+    data, address = s.recvfrom(1024)
+    print >>sys.stderr, 'received %s from %s' % (data, address)
     print data
 
     result = dict_mac.get(data)             # Get the lab name using the MAC address given by client
+
     if result is None:
-        conn.send("Error: Mac Address not found")
+        er = "Error: Mac Address not found"
+        s.sendto(er, address)
+        print >>sys.stderr, 'sent %s back to %s' % (er, address)
     else:
-        conn.send(allote_ip(data))
+        ans = allote_ip(data)
+        s.sendto(ans, address)
+        print >>sys.stderr, 'sent %s back to %s' % (ans, address)
 
     print('Done sending')
-
-    conn.close()
