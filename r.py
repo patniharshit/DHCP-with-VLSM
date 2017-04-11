@@ -23,14 +23,13 @@ else:
         firstline = line.split()
         break
     inputCommand = firstline[len(firstline)-1]
-
-inputCommand = inputCommand.upper()
+    inputCommand = inputCommand.upper()
 
 # use regex for validating mac address
-#validInput = re.match("([0-9a-fA-F]:?){12}", " ".join(inputCommand))
+validInput = re.match("([0-9a-fA-F]:?){12}", " ".join([inputCommand]))
 
-#if validInput is None:
-#    exit("ERROR: Validate the input")
+if validInput is None:
+    exit("ERROR: Validate the input")
 
 sent = s.sendto(inputCommand, server_address)
 data, server = s.recvfrom(1024)
