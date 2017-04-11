@@ -99,7 +99,7 @@ def getNetworkAddr(network_addr):
 
 def vlsm(ipaddr, lab_req):
     bits = 0
-
+    print ipaddr
     for x in range(len(lab_req)):
         bits = min_pow2(lab_req[x][0] + 2)
         ipaddr = getnet(ipaddr, getmask(int(32 - bits)))
@@ -180,11 +180,23 @@ for line in f:
 if num_hosts > (pow(2, 32 - cidr) - 2):
     exit("ERROR: Too many hosts")
 
+free_space = pow(2, 32 - cidr) - 2 - num_hosts
+dict_lab["OPEN"] = free_space
+lab_req.append((free_space, "OPEN"))
+
+
 lab_req = sorted(lab_req, reverse=True)
 mask = getmask(cidr)
 network_addr = getNetworkAddr(network_addr)
 
-vlsm(getnet(network_addr, mask), lab_req)
+ser_ip = getnet(network_addr, mask)
+network_addr = ser_ip
+server_ip = str(network_addr[0]) + "." + str(network_addr[1]) + "." + str(network_addr[2]) + "." + str(network_addr[3])
+ser_tup = generate_next((network_addr,"server",0))
+#print "next: ", ser_tup[0]
+#print "server_ip: ", server_ip
+
+vlsm(ser_tup[0], lab_req)
 
 port = 45555
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -194,14 +206,15 @@ s.bind((host, port))
 while True:
     data, address = s.recvfrom(1024)
     print >>sys.stderr, 'received %s from %s' % (data, address)
-    print data
 
-    result = dict_mac.get(data)             # Get the lab name using the MAC address given by client
+    # Get the lab name using the MAC address given by client
+    result = dict_mac.get(data)
 
     if result is None:
-        er = "Error: Mac Address not found"
-        s.sendto(er, address)
-        print >>sys.stderr, 'sent %s back to %s' % (er, address)
+        dict_mac[data] = "OPEN"
+        ans = allote_ip(data)
+        s.sendto(ans, address)
+        print >>sys.stderr, 'sent %s back to %s' % (ans, address)
     else:
         ans = allote_ip(data)
         s.sendto(ans, address)

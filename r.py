@@ -5,7 +5,9 @@ import sys
 from sys import argv
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_address = ("", 45555)
+s.bind(('', 0))
+s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+server_address = ('<broadcast>', 45555)
 
 if len(argv) >= 2:
     if argv[1] == "-m":
