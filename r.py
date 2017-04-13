@@ -33,7 +33,13 @@ if validInput is None:
 
 sent = s.sendto(inputCommand, server_address)
 data, server = s.recvfrom(1024)
-print >>sys.stderr, 'received "%s"' % data
+print >>sys.stderr, 'Allocated IP: "%s"' % data
+
+data, server = s.recvfrom(1024)
+print >>sys.stderr, 'Network Address: "%s"' % data
+
+data, server = s.recvfrom(1024)
+print >>sys.stderr, 'Broadcast Address "%s"' % data
 
 s.close()
 

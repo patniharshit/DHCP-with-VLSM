@@ -117,6 +117,8 @@ def vlsm(ipaddr, lab_req):
                32 - bits,
                norm(getmask(int(32 - bits))))
 
+        net_lab[lab_req[x][1]] = (norm(ipaddr), norm(getbcast(ipaddr, getmask(int(32 - bits)))))
+
         ipaddr = getnextaddr(ipaddr, getmask(int(32 - bits)))
 
 
@@ -149,8 +151,10 @@ dict_mac = {}
 dict_alloted = {}
 lab_req = []
 state_arr = []
+net_lab = {}
 count = 0
 num_hosts = 0
+answer = ()
 
 for line in f:
     if count == 0:
@@ -164,7 +168,7 @@ for line in f:
 
     elif count > 1 and count <= num_labs+1:
         line = line.split('\n')
-        line = line[0].split(":")           # creating a dictionary for the labs in the form {'Lab_name':'No.of addresses required'}
+        line = line[0].split(" ")           # creating a dictionary for the labs in the form {'Lab_name':'No.of addresses required'}
         dict_lab[line[0]] = int(line[1])
         lab_req.append((int(line[1]), line[0]))
         num_hosts = num_hosts + int(line[1])  # add number of hosts in the lab to total
@@ -212,12 +216,20 @@ while True:
 
     if result is None:
         dict_mac[data] = "OPEN"
+        answer = net_lab.get("OPEN")
         ans = allote_ip(data)
         s.sendto(ans, address)
+        s.sendto(answer[0], address)
+        s.sendto(answer[1], address)
         print >>sys.stderr, 'sent %s back to %s' % (ans, address)
     else:
+        print result
+        answer = net_lab.get(result)
+        print answer
         ans = allote_ip(data)
         s.sendto(ans, address)
+        s.sendto(answer[0], address)
+        s.sendto(answer[1], address)
         print >>sys.stderr, 'sent %s back to %s' % (ans, address)
 
     print('Done sending')
