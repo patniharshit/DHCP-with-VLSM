@@ -43,10 +43,10 @@ data = json.loads(data)
 print >>sys.stderr, '\nDHCP offer for IP from server: "%s"\n' % data[0]
 
 # send request
-req = ("server_ip", data[0])
+req = (data[-1], data[0])
 req = json.dumps(req)
 sent = s.sendto(req, server_address)
-print >>sys.stderr, 'Request send to %s for %s' % ('server', data[0])
+print >>sys.stderr, 'Request send to %s for %s' % (data[-1], data[0])
 
 # recieve ack
 data, server = s.recvfrom(1024)

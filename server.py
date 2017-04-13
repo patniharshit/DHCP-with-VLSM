@@ -194,7 +194,7 @@ network_addr = getNetworkAddr(network_addr)
 ser_ip = getnet(network_addr, mask)
 network_addr = ser_ip
 server_ip = str(network_addr[0]) + "." + str(network_addr[1]) + "." + str(network_addr[2]) + "." + str(network_addr[3])
-ser_tup = generate_next((network_addr,"server",0))
+ser_tup = generate_next((network_addr, "server", 0))
 
 vlsm(ser_tup[0], lab_req)
 
@@ -203,6 +203,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 host = ""
 s.bind((host, port))
 
+dict_mac["SERVER"] = "OPEN"
+answer1 = net_lab.get("OPEN")
+SERVER = allote_ip("SERVER")
 
 while True:
     # detect broadcast from client
@@ -211,7 +214,6 @@ while True:
 
     # Get the lab name using the MAC address given by client
     result = dict_mac.get(data)
-
 
     if result is None:
         dict_mac[data] = "OPEN"
@@ -222,7 +224,7 @@ while True:
         answer = net_lab.get(result)
         ans = allote_ip(data)
 
-    output = (ans, answer[0], answer[1], dns_arr.get(result), dns_arr.get(result))
+    output = (ans, answer[0], answer[1], dns_arr.get(result), dns_arr.get(result), SERVER)
     output = json.dumps(output)
     s.sendto(output, address)
     print >>sys.stderr, 'Sent DHCP offer for %s back to %s' % (ans, address)
@@ -233,7 +235,7 @@ while True:
 
     # Acknowlege request
     data = json.loads(data)
-    if(data[0] == "server_ip"):
+    if(data[0] == SERVER):
         s.sendto(output, address)
         print >>sys.stderr, 'Request acknowledged for %s back to %s' % (ans, address)
     else:
