@@ -1,6 +1,8 @@
 import socket
 from math import pow, ceil, log
 import sys
+import json
+
 
 def min_pow2(x):
     z = log(x, 2)
@@ -53,7 +55,7 @@ def getnextaddr(ipaddr, nmask):
 
 def generate_next(tupple):
     """
-    tuppe format : tupple(1) : has the ip address for next machine to be assigned
+    tupple format : tupple(1) : has the ip address for next machine to be assigned
                    tupple(2) : has the name of the Lab_name
                    tupple(3) : Has the number of machine allocated I address after allocation of recent IP addr
     """
@@ -99,7 +101,7 @@ def getNetworkAddr(network_addr):
 
 def vlsm(ipaddr, lab_req):
     bits = 0
-    print ipaddr
+
     for x in range(len(lab_req)):
         bits = min_pow2(lab_req[x][0] + 2)
         ipaddr = getnet(ipaddr, getmask(int(32 - bits)))
@@ -197,8 +199,6 @@ ser_ip = getnet(network_addr, mask)
 network_addr = ser_ip
 server_ip = str(network_addr[0]) + "." + str(network_addr[1]) + "." + str(network_addr[2]) + "." + str(network_addr[3])
 ser_tup = generate_next((network_addr,"server",0))
-#print "next: ", ser_tup[0]
-#print "server_ip: ", server_ip
 
 vlsm(ser_tup[0], lab_req)
 
@@ -208,8 +208,9 @@ host = ""
 s.bind((host, port))
 
 while True:
+    # detect broadcast from client
     data, address = s.recvfrom(1024)
-    print >>sys.stderr, 'received %s from %s' % (data, address)
+    print >>sys.stderr, 'Received %s from %s' % (data, address)
 
     # Get the lab name using the MAC address given by client
     result = dict_mac.get(data)
@@ -218,18 +219,26 @@ while True:
         dict_mac[data] = "OPEN"
         answer = net_lab.get("OPEN")
         ans = allote_ip(data)
-        s.sendto(ans, address)
-        s.sendto(answer[0], address)
-        s.sendto(answer[1], address)
-        print >>sys.stderr, 'sent %s back to %s' % (ans, address)
     else:
-        print result
         answer = net_lab.get(result)
-        print answer
         ans = allote_ip(data)
-        s.sendto(ans, address)
-        s.sendto(answer[0], address)
-        s.sendto(answer[1], address)
-        print >>sys.stderr, 'sent %s back to %s' % (ans, address)
+
+    # DHCP offer
+    output = (ans, answer[0], answer[1], "server_ip")
+    output = json.dumps(output)
+    s.sendto(output, address)
+    print >>sys.stderr, 'Sent DHCP offer for %s back to %s' % (ans, address)
+
+    # Recieve request
+    data, address = s.recvfrom(1024)
+    print 'Request recieved from client for %s' % (data)
+
+    # Acknowlege request
+    data = json.loads(data)
+    if(data[0] == "server_ip"):
+        s.sendto(output, address)
+        print >>sys.stderr, 'Request acknowledged for %s back to %s' % (ans, address)
+    else:
+        print "Offer cancelled"
 
     print('Done sending')
