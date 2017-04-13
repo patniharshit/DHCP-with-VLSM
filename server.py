@@ -107,17 +107,6 @@ def vlsm(ipaddr, lab_req):
         ipaddr = getnet(ipaddr, getmask(int(32 - bits)))
 
         state_arr.append((ipaddr, lab_req[x][1], 0))
-        print " SUBNET: %d NEEDED: %3d (%3d %% of) ALLOCATED %4d ADDRESS: %15s :: %15s - %-15s :: %15s MASK: %d (%15s)" % \
-              (x + 1,
-               lab_req[x][0],
-               (lab_req[x][0] * 100) / (int(pow(2, bits)) - 2),
-               int(pow(2, bits)) - 2,
-               norm(ipaddr),
-               norm(ipaddr),
-               norm(getbcast(ipaddr, getmask(int(32 - bits)))),
-               norm(getbcast(ipaddr, getmask(int(32 - bits)))),
-               32 - bits,
-               norm(getmask(int(32 - bits))))
 
         net_lab[lab_req[x][1]] = (norm(ipaddr), norm(getbcast(ipaddr, getmask(int(32 - bits)))), 32-bits)
 
@@ -147,7 +136,8 @@ def allote_ip(mac_address):
             return_ip = str(temp[0]) + '.' + str(temp[1]) + '.' + str(temp[2]) + '.' + str(temp[3]) + "/" + str(net_lab[state_arr[i][1]][2])
             dict_alloted[mac_address] = return_ip
             if flag==1:
-                dns_arr[state_arr[i][1]] = return_ip
+
+                dns_arr[lab_name] = return_ip
             return return_ip
 
 
@@ -197,7 +187,6 @@ free_space = pow(2, 32 - cidr) - 2 - num_hosts
 dict_lab["OPEN"] = free_space
 lab_req.append((free_space, "OPEN"))
 
-
 lab_req = sorted(lab_req, reverse=True)
 mask = getmask(cidr)
 network_addr = getNetworkAddr(network_addr)
@@ -223,18 +212,17 @@ while True:
     # Get the lab name using the MAC address given by client
     result = dict_mac.get(data)
 
+
     if result is None:
         dict_mac[data] = "OPEN"
         answer = net_lab.get("OPEN")
         ans = allote_ip(data)
-        print ans
+        result = "OPEN"
     else:
         answer = net_lab.get(result)
         ans = allote_ip(data)
-        print ans
 
-    # DHCP offer
-    output = (ans, answer[0], answer[1], dns_arr[result], dns_arr[result])
+    output = (ans, answer[0], answer[1], dns_arr.get(result), dns_arr.get(result))
     output = json.dumps(output)
     s.sendto(output, address)
     print >>sys.stderr, 'Sent DHCP offer for %s back to %s' % (ans, address)
@@ -251,4 +239,4 @@ while True:
     else:
         print "Offer cancelled"
 
-    print('Done sending')
+    print('Done sending\n\n')
