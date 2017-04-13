@@ -52,6 +52,9 @@ print >>sys.stderr, 'Request send to %s for %s' % ('server', data[0])
 data, server = s.recvfrom(1024)
 data = json.loads(data)
 print >>sys.stderr, '\nACK: "%s"' % data
-
-print '\nIP address: %s\nNetwork Address : %s\nBroadcast Address: %s\n' % (data[0], data[1], data[2])
+gate = data[3].split("/")
+gate = gate[0]
+dns = data[4].split("/")
+dns = dns[0]
+print '\nIP address: %s\nNetwork Address : %s\nBroadcast Address: %s\nGateway: %s\nDNS: %s\n' % (data[0], data[1], data[2], gate, dns)
 s.close()

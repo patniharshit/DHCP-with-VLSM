@@ -119,13 +119,14 @@ def vlsm(ipaddr, lab_req):
                32 - bits,
                norm(getmask(int(32 - bits))))
 
-        net_lab[lab_req[x][1]] = (norm(ipaddr), norm(getbcast(ipaddr, getmask(int(32 - bits)))))
+        net_lab[lab_req[x][1]] = (norm(ipaddr), norm(getbcast(ipaddr, getmask(int(32 - bits)))), 32-bits)
 
         ipaddr = getnextaddr(ipaddr, getmask(int(32 - bits)))
 
 
 def allote_ip(mac_address):
 
+    flag = 0
     if(mac_address in dict_alloted):
         return dict_alloted[mac_address]
 
@@ -133,6 +134,9 @@ def allote_ip(mac_address):
 
     for i in range(len(state_arr)):
         if(state_arr[i][1] == lab_name):
+            if state_arr[i][2]==0:
+                flag = 1
+
             next_state = generate_next(state_arr[i])
             if(next_state[2] <= dict_lab[lab_name]):
                 state_arr[i] = next_state
@@ -140,8 +144,10 @@ def allote_ip(mac_address):
                 return "No more IPs can be alloted"
                 exit(0)
             temp = next_state[0]
-            return_ip = str(temp[0]) + '.' + str(temp[1]) + '.' + str(temp[2]) + '.' + str(temp[3])
+            return_ip = str(temp[0]) + '.' + str(temp[1]) + '.' + str(temp[2]) + '.' + str(temp[3]) + "/" + str(net_lab[state_arr[i][1]][2])
             dict_alloted[mac_address] = return_ip
+            if flag==1:
+                dns_arr[state_arr[i][1]] = return_ip
             return return_ip
 
 
@@ -157,6 +163,7 @@ net_lab = {}
 count = 0
 num_hosts = 0
 answer = ()
+dns_arr={}
 
 for line in f:
     if count == 0:
@@ -207,6 +214,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 host = ""
 s.bind((host, port))
 
+
 while True:
     # detect broadcast from client
     data, address = s.recvfrom(1024)
@@ -219,12 +227,14 @@ while True:
         dict_mac[data] = "OPEN"
         answer = net_lab.get("OPEN")
         ans = allote_ip(data)
+        print ans
     else:
         answer = net_lab.get(result)
         ans = allote_ip(data)
+        print ans
 
     # DHCP offer
-    output = (ans, answer[0], answer[1], "server_ip")
+    output = (ans, answer[0], answer[1], dns_arr[result], dns_arr[result])
     output = json.dumps(output)
     s.sendto(output, address)
     print >>sys.stderr, 'Sent DHCP offer for %s back to %s' % (ans, address)
